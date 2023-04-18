@@ -1,6 +1,3 @@
-//! This example demonstrates the built-in 3d shapes in Bevy.
-//! The scene includes a patterned texture and a rotation for visualizing the normals and UVs.
-
 use bevy::prelude::*;
 
 fn main() {
@@ -11,9 +8,8 @@ fn main() {
         .run();
 }
 
-/// A marker component for our shapes so we can query them separately from the ground plane
 #[derive(Component)]
-struct Shape;
+struct Earth;
 
 fn setup(
     mut commands: Commands,
@@ -30,15 +26,22 @@ fn setup(
         ..default()
     });
 
-    let mesh_handle = meshes.add(shape::UVSphere::default().into());
+    let mesh_handle = meshes.add(
+        shape::UVSphere {
+            sectors: 128,
+            ..Default::default()
+        }
+        .into(),
+    );
 
     commands.spawn((
         PbrBundle {
             mesh: mesh_handle,
             material: material_handle.clone(),
+            transform: Transform::from_rotation(Quat::from_rotation_x(std::f32::consts::PI / 2.)),
             ..default()
         },
-        Shape,
+        Earth,
     ));
 
     commands.spawn(PointLightBundle {
@@ -57,7 +60,7 @@ fn setup(
     });
 }
 
-fn rotate(mut query: Query<&mut Transform, With<Shape>>, time: Res<Time>) {
+fn rotate(mut query: Query<&mut Transform, With<Earth>>, time: Res<Time>) {
     for mut transform in &mut query {
         transform.rotate_y(time.delta_seconds() / 2.);
     }
