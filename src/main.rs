@@ -1,4 +1,10 @@
-use bevy::prelude::*;
+use bevy::{
+    core_pipeline::{
+        bloom::{BloomCompositeMode, BloomSettings},
+        tonemapping::Tonemapping,
+    },
+    prelude::*,
+};
 
 fn main() {
     App::new()
@@ -31,11 +37,6 @@ fn setup(
         base_color_texture: Some(texture_handle),
         alpha_mode: AlphaMode::Blend,
         cull_mode: None,
-        ..default()
-    });
-
-    let earthquake_material_handle = materials.add(StandardMaterial {
-        base_color: Color::YELLOW,
         ..default()
     });
 
@@ -112,13 +113,17 @@ fn setup(
                 parent.spawn((
                     PbrBundle {
                         mesh: meshes.add(
-                            shape::UVSphere {
+                            shape::Icosphere {
                                 radius: earthquake.magnitude / 20.,
                                 ..Default::default()
                             }
-                            .into(),
+                            .try_into()
+                            .unwrap(),
                         ),
-                        material: earthquake_material_handle.clone(),
+                        material: materials.add(StandardMaterial {
+                            emissive: Color::rgb_linear(13.99, 5.32, 2.0),
+                            ..default()
+                        }),
                         transform: Transform::from_xyz(
                             earthquake.latitude.to_radians().cos()
                                 * earthquake.longitude.to_radians().sin(),
@@ -133,20 +138,21 @@ fn setup(
             });
         });
 
-    commands.spawn(PointLightBundle {
-        point_light: PointLight {
-            intensity: 9000.,
-            range: 100.,
+    commands.spawn((
+        Camera3dBundle {
+            camera: Camera {
+                hdr: true,
+                ..default()
+            },
+            tonemapping: Tonemapping::TonyMcMapface,
+            transform: Transform::from_xyz(0., 0., 3.).looking_at(Vec3::new(0., 0., 0.), Vec3::Y),
             ..default()
         },
-        transform: Transform::from_xyz(8., 16., 8.),
-        ..default()
-    });
-
-    commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(0., 0., 3.).looking_at(Vec3::new(0., 0., 0.), Vec3::Y),
-        ..default()
-    });
+        BloomSettings {
+            composite_mode: BloomCompositeMode::Additive,
+            ..default()
+        },
+    ));
 }
 
 fn rotate(mut query: Query<&mut Transform, With<Earth>>, time: Res<Time>) {
