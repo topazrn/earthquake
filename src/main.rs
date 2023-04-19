@@ -47,9 +47,16 @@ fn setup(
         .into(),
     );
 
+    let earthquake0 = Earthquake {
+        latitude: 90.,
+        longitude: 0.,
+        depth: 122.2,
+        magnitude: 1.5,
+    };
+
     let earthquake1 = Earthquake {
-        latitude: 63.3958,
-        longitude: -150.197,
+        latitude: -90.,
+        longitude: 0.,
         depth: 122.2,
         magnitude: 1.5,
     };
@@ -83,6 +90,7 @@ fn setup(
     };
 
     let earthquakes = vec![
+        earthquake0,
         earthquake1,
         earthquake2,
         earthquake3,
